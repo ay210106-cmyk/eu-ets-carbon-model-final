@@ -773,15 +773,15 @@
     <div class="assumptions-grid">
       <div class="assumption-item">
         <div class="assumption-label">Cement revenue per tonne — estimated</div>
-        <div class="assumption-body">Heidelberg Materials does not disclose Europe cement volumes in tonnes. The ~€120/t figure is derived from group cement revenue (€10,967m FY 2025) ÷ estimated ~115mt global volumes × European price premium. All other figures are primary-sourced.</div>
+        <div class="assumption-body">Heidelberg Materials does not disclose Europe cement volumes in tonnes. The ~€120/t figure is derived from group cement revenue (€10,967m FY 2025) ÷ estimated ~115mt global volumes × European price premium. Corroborated by IMARC European cement price index (~$144/t, Oct 2025) and IndexBox Germany data ($100–120/t). All other figures are primary-sourced.</div>
+      </div>
+      <div class="assumption-item">
+        <div class="assumption-label">Static company structure</div>
+        <div class="assumption-body">Emissions intensity and production routes are held constant at FY 2025 levels. In practice both companies are actively decarbonising — ArcelorMittal's Dunkirk EAF (commissioning 2029) and Heidelberg's Brevik and Padeswood CCS facilities will materially reduce exposure before 2034. The model shows structural pressure without adaptation, quantifying the incentive to invest.</div>
       </div>
       <div class="assumption-item">
         <div class="assumption-label">No cost pass-through modelled</div>
-        <div class="assumption-body">The model shows theoretical margin compression before any price response. In practice, both companies have demonstrated ability to pass carbon costs through to customers — ArcelorMittal explicitly flagged CBAM-driven price recovery from Q2 2026; Heidelberg has strong regional pricing power.</div>
-      </div>
-      <div class="assumption-item">
-        <div class="assumption-label">Free allocation proxy</div>
-        <div class="assumption-body">Free allocation decay is modelled linearly from today's levels to zero by 2034, proxied against the EUA price slider. Actual phase-out follows EU ETS Phase 4 Directive schedules which differ by sector and installation. The model is indicative, not installation-specific.</div>
+        <div class="assumption-body">The model shows theoretical margin compression before any price response. In practice both companies pass carbon costs through to customers — ArcelorMittal flagged CBAM-driven price recovery from Q2 2026; Heidelberg has strong regional pricing power in cement. Actual margin impact will be lower than modelled.</div>
       </div>
     </div>
   </div>
@@ -792,7 +792,7 @@
     <div class="method-grid">
       <div class="method-item">
         <div class="method-item-title">EU ETS &amp; CBAM pricing</div>
-        <div class="method-item-body">Q1 2026 CBAM certificate price: €75.36/t (European Commission, Apr 2026). Free allocation phase-out schedule per EU ETS Phase 4 Directive: −2.5% in 2026, −5% in 2027, linear to 0% by 2034. EUA forecasts: €85–100/t by 2027. Long-run scenario to €200/t per EY/EC modelling. Heidelberg's own internal planning assumption: €80/t in 2025/26, rising to €100 by 2030 (Heidelberg Materials Capital Market Slides Q1 2026).</div>
+        <div class="method-item-body">Q1 2026 CBAM certificate price: €75.36/t (European Commission, Apr 2026). Free allocation phase-out schedule confirmed from European Parliament legislative record (CBAM Regulation EU 2023/956): both steel and cement follow identical schedule — 2026: 2.5% removed; 2027: 5%; 2028: 10%; 2029: 22.5%; 2030: 48.5%; 2031: 61%; 2032: 73.5%; 2033: 86%; 2034: 100%. Slider maps €75→€200 as proxy for 2026→2034 time trajectory with confirmed non-linear phase-out. EUA forecasts: €85–100/t by 2027. Long-run scenario to €200/t per EY/EC modelling. Heidelberg's own internal planning assumption: €80/t in 2025/26, rising to €100 by 2030 (Heidelberg Materials Capital Market Slides Q1 2026).</div>
       </div>
       <div class="method-item">
         <div class="method-item-title">Emissions intensities</div>
@@ -818,39 +818,64 @@
 // ArcelorMittal Europe segment, FY 2025
 // Source: ArcelorMittal FY 2025 Full Year Results, Feb 5 2026
 const STEEL_INTENSITY    = 1.80;   // tCO2/t steel (World Steel Association, 2025)
-const STEEL_FREE_BASE    = 0.90;   // 90% free allocation in 2025 (EU ETS Phase 4)
 const STEEL_REVENUE_PT   = 894;    // USD/t — Europe avg selling price FY 2025 (ArcelorMittal)
 const STEEL_EBITDA       = 0.070;  // 7.0% — Europe segment EBITDA margin FY 2025
 
 // Heidelberg Materials Europe segment, FY 2025
 // Source: Heidelberg Materials FY 2025 Full Year Results, Feb 25 2026
 const CEMENT_INTENSITY   = 0.65;   // tCO2/t clinker (IEA, 2024); reported 512 kg/t cementitious
-const CEMENT_FREE_BASE   = 0.60;   // ~60% free allocation in 2026 (EU ETS Phase 4)
 const CEMENT_REVENUE_PT  = 120;    // EUR/t — derived estimate: group cement revenue €10,967m ÷ ~115mt global volumes × European premium; flagged as estimate
 const CEMENT_EBITDA      = 0.205;  // 20.5% — Europe segment EBITDA margin FY 2025
 
-const BASE_PRICE = 75;
+const BASE_PRICE = 75; // €75/t = Q1 2026 actual EUA price (European Commission)
 
-// Free allocation in 2026 at €75 baseline, phasing to 0% by 2034
-// We model this as: at €75 (today/2026), use the base allocation.
-// As price rises toward €200 (proxy for 2035), allocation decays to zero.
-// At €0 (no carbon price), also use base allocation (no ETS → no cost anyway).
-function freeAlloc(baseAlloc, price) {
-  if (price <= 0) return baseAlloc;
-  if (price <= BASE_PRICE) return baseAlloc;
-  const decay = (price - BASE_PRICE) / (200 - BASE_PRICE);
-  return Math.max(0, baseAlloc * (1 - decay));
+// ── FREE ALLOCATION PHASE-OUT ──────────────────────────
+// Source: European Parliament legislative record (CBAM Regulation EU 2023/956)
+// Both steel and cement follow the SAME schedule — sector-agnostic CBAM factor.
+// In 2025: ~100% free. Phase-out starts 2026 as CBAM definitively applies.
+// CBAM factor (% of emissions no longer free): 2026:2.5%, 2027:5%, 2028:10%,
+// 2029:22.5%, 2030:48.5%, 2031:61%, 2032:73.5%, 2033:86%, 2034:100%
+// Slider maps €75→€200 as a proxy for 2026→2035 time trajectory.
+// We interpolate the confirmed non-linear schedule across the price range.
+
+// Price breakpoints mapped to confirmed CBAM factor schedule
+const CBAM_SCHEDULE = [
+  { price:  75, paid: 0.025 },  // 2026: 2.5% paid
+  { price:  90, paid: 0.050 },  // 2027: 5%
+  { price: 105, paid: 0.100 },  // 2028: 10%
+  { price: 120, paid: 0.225 },  // 2029: 22.5%
+  { price: 140, paid: 0.485 },  // 2030: 48.5%
+  { price: 155, paid: 0.610 },  // 2031: 61%
+  { price: 168, paid: 0.735 },  // 2032: 73.5%
+  { price: 182, paid: 0.860 },  // 2033: 86%
+  { price: 200, paid: 1.000 },  // 2034: 100%
+];
+
+function paidFraction(price) {
+  if (price <= 0)  return 0;
+  if (price < 75)  return 0.025 * (price / 75); // below today: interpolate toward 2026 level
+  if (price >= 200) return 1.0;
+  // interpolate between confirmed schedule points
+  for (let i = 0; i < CBAM_SCHEDULE.length - 1; i++) {
+    const lo = CBAM_SCHEDULE[i];
+    const hi = CBAM_SCHEDULE[i + 1];
+    if (price >= lo.price && price <= hi.price) {
+      const t = (price - lo.price) / (hi.price - lo.price);
+      return lo.paid + t * (hi.paid - lo.paid);
+    }
+  }
+  return 1.0;
 }
 
-function calc(price, intensity, freeBase, revPT, ebitdaBase) {
-  const fa   = freeAlloc(freeBase, price);
-  const cost = price * intensity * (1 - fa);
+function calc(price, intensity, revPT, ebitdaBase) {
+  const paid = paidFraction(price);
+  const cost = price * intensity * paid;
   const impact = cost / revPT;
   return {
     cost,
     impact,
-    margin: Math.max(0, ebitdaBase - impact),
-    fa
+    paid,
+    margin: Math.max(0, ebitdaBase - impact)
   };
 }
 
@@ -859,9 +884,9 @@ const PRICES = [];
 for (let p = 0; p <= 200; p += 4) PRICES.push(p);
 const LABELS = PRICES.map(p => p % 50 === 0 ? '€' + p : '');
 
-function getChartData(intensity, freeBase, revPT, ebitdaBase, mode) {
+function getChartData(intensity, revPT, ebitdaBase, mode) {
   return PRICES.map(p => {
-    const r = calc(p, intensity, freeBase, revPT, ebitdaBase);
+    const r = calc(p, intensity, revPT, ebitdaBase);
     return +(mode === 'cost' ? r.cost : r.margin * 100).toFixed(2);
   });
 }
@@ -926,8 +951,8 @@ function dynamicMax(data) {
   return Math.ceil(Math.max(...data) * 1.2);
 }
 
-const steelData  = getChartData(STEEL_INTENSITY,  STEEL_FREE_BASE,  STEEL_REVENUE_PT,  STEEL_EBITDA,  'cost');
-const cementData = getChartData(CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA, 'cost');
+const steelData  = getChartData(STEEL_INTENSITY,  STEEL_REVENUE_PT,  STEEL_EBITDA,  'cost');
+const cementData = getChartData(CEMENT_INTENSITY, CEMENT_REVENUE_PT, CEMENT_EBITDA, 'cost');
 
 const steelChart  = makeChart('steelChart',  steelData,  '#2563b0', fmtCost, dynamicMax(steelData));
 const cementChart = makeChart('cementChart', cementData, '#7c3aaa', fmtCost, dynamicMax(cementData));
@@ -960,18 +985,18 @@ function updateMarker(chart, price) {
 }
 
 // ── BASE VALUES ────────────────────────────────────────
-const baseS = calc(BASE_PRICE, STEEL_INTENSITY,  STEEL_FREE_BASE,  STEEL_REVENUE_PT,  STEEL_EBITDA);
-const baseC = calc(BASE_PRICE, CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA);
+const baseS = calc(BASE_PRICE, STEEL_INTENSITY,  STEEL_REVENUE_PT,  STEEL_EBITDA);
+const baseC = calc(BASE_PRICE, CEMENT_INTENSITY, CEMENT_REVENUE_PT, CEMENT_EBITDA);
 
 // ── UPDATE ─────────────────────────────────────────────
 function phaseName(p) {
   if (p <= 0)   return 'No carbon price';
   if (p < 75)   return 'Below current market price';
-  if (p < 82)   return 'Q1 2026 actual price';
-  if (p < 105)  return '2027 forecast range';
-  if (p < 135)  return '2028–2029 projection';
-  if (p < 165)  return '2030 policy scenario';
-  return '2035 long-run scenario';
+  if (p < 85)   return 'Q1 2026 — 2.5% free alloc. removed';
+  if (p < 108)  return '2027–28 — 5–10% free alloc. removed';
+  if (p < 142)  return '2029–30 — 22.5–48.5% free alloc. removed';
+  if (p < 170)  return '2031–32 — 61–73.5% free alloc. removed';
+  return '2033–34 — 86–100% free alloc. removed';
 }
 
 function updateAll(val) {
@@ -985,8 +1010,8 @@ function updateAll(val) {
   valEl.className = 'slider-value ' + (p < 82 ? 'low' : p < 135 ? 'mid' : 'high');
   document.getElementById('sliderPhase').textContent = phaseName(p);
 
-  const s = calc(p, STEEL_INTENSITY,  STEEL_FREE_BASE,  STEEL_REVENUE_PT,  STEEL_EBITDA);
-  const c = calc(p, CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA);
+  const s = calc(p, STEEL_INTENSITY,  STEEL_REVENUE_PT,  STEEL_EBITDA);
+  const c = calc(p, CEMENT_INTENSITY, CEMENT_REVENUE_PT, CEMENT_EBITDA);
 
   // Steel
   const steelMarginPct = Math.max(0, s.margin * 100);
@@ -1014,8 +1039,8 @@ function updateAll(val) {
   const sRel = Math.min(s.impact / STEEL_EBITDA  * 100, 100);
   const cRel = Math.min(c.impact / CEMENT_EBITDA * 100, 100);
   const maxRel = Math.max(
-    Math.min(calc(200, STEEL_INTENSITY,  STEEL_FREE_BASE,  STEEL_REVENUE_PT,  STEEL_EBITDA).impact  / STEEL_EBITDA  * 100, 100),
-    Math.min(calc(200, CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA).impact / CEMENT_EBITDA * 100, 100)
+    Math.min(calc(200, STEEL_INTENSITY,  STEEL_REVENUE_PT,  STEEL_EBITDA).impact  / STEEL_EBITDA  * 100, 100),
+    Math.min(calc(200, CEMENT_INTENSITY, CEMENT_REVENUE_PT, CEMENT_EBITDA).impact / CEMENT_EBITDA * 100, 100)
   );
 
   document.getElementById('steelBar').style.width   = Math.min(sRel / maxRel * 100, 100) + '%';
@@ -1031,8 +1056,8 @@ function updateAll(val) {
 // ── AI ─────────────────────────────────────────────────
 async function runAI() {
   const p = +document.getElementById('carbonSlider').value;
-  const s = calc(p, STEEL_INTENSITY,  STEEL_FREE_BASE,  STEEL_REVENUE_PT,  STEEL_EBITDA);
-  const c = calc(p, CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA);
+  const s = calc(p, STEEL_INTENSITY,  STEEL_REVENUE_PT,  STEEL_EBITDA);
+  const c = calc(p, CEMENT_INTENSITY, CEMENT_REVENUE_PT, CEMENT_EBITDA);
 
   const btn = document.getElementById('generateBtn');
   btn.disabled = true;
