@@ -522,6 +522,50 @@
 
   .loading { animation: shimmer 1.4s infinite; color: var(--text-muted); }
 
+  /* ── ASSUMPTIONS BOX ── */
+  .assumptions-box {
+    background: var(--card);
+    border: 1px solid var(--border-dark);
+    border-left: 3px solid var(--slate);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+
+  .assumptions-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--slate);
+    margin-bottom: 1rem;
+  }
+
+  .assumptions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+
+  .assumption-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--slate);
+    margin-bottom: 4px;
+  }
+
+  .assumption-body {
+    font-size: 11.5px;
+    color: var(--text-muted);
+    line-height: 1.65;
+    font-weight: 300;
+  }
+
+  @media (max-width: 760px) {
+    .assumptions-grid { grid-template-columns: 1fr; }
+  }
+
   /* ── METHODOLOGY ── */
   .methodology {
     background: var(--card);
@@ -624,13 +668,6 @@
       </div>
     </div>
     <input type="range" min="0" max="200" value="75" step="1" id="carbonSlider" oninput="updateAll(this.value)">
-    <div class="slider-ticks">
-      <span>€0</span>
-      <span>€75 — today</span>
-      <span>€100 — 2027 est.</span>
-      <span>€150 — 2030</span>
-      <span>€200 — 2035</span>
-    </div>
   </div>
 
   <div class="cards-grid">
@@ -691,7 +728,7 @@
         <canvas id="cementChart"></canvas>
       </div>
       <div class="source-note">
-        0.65 tCO₂/t clinker (IEA, 2024); 512 kg CO₂/t cementitious reported (Heidelberg FY 2025). Free allocation ~60% in 2026, declining. Baseline: Europe segment EBITDA 20.5%, avg. revenue ~€85/t (Heidelberg Materials FY 2025 Full Year Results, Feb 2026).
+        0.65 tCO₂/t clinker (IEA, 2024); 512 kg CO₂/t cementitious reported (Heidelberg FY 2025). Free allocation ~60% in 2026, declining. Baseline: Europe segment EBITDA 20.5% (Heidelberg Materials FY 2025 Full Year Results, Feb 2026). Avg. revenue ~€120/t — derived estimate; Europe cement revenue €4,874m ÷ estimated ~40mt volumes (see methodology).
       </div>
     </div>
 
@@ -730,6 +767,25 @@
     </div>
   </div>
 
+  <!-- KEY ASSUMPTIONS -->
+  <div class="assumptions-box fade-up">
+    <div class="assumptions-title">⚠ Key assumptions &amp; limitations</div>
+    <div class="assumptions-grid">
+      <div class="assumption-item">
+        <div class="assumption-label">Cement revenue per tonne — estimated</div>
+        <div class="assumption-body">Heidelberg Materials does not disclose Europe cement volumes in tonnes. The ~€120/t figure is derived from group cement revenue (€10,967m FY 2025) ÷ estimated ~115mt global volumes × European price premium. All other figures are primary-sourced.</div>
+      </div>
+      <div class="assumption-item">
+        <div class="assumption-label">No cost pass-through modelled</div>
+        <div class="assumption-body">The model shows theoretical margin compression before any price response. In practice, both companies have demonstrated ability to pass carbon costs through to customers — ArcelorMittal explicitly flagged CBAM-driven price recovery from Q2 2026; Heidelberg has strong regional pricing power.</div>
+      </div>
+      <div class="assumption-item">
+        <div class="assumption-label">Free allocation proxy</div>
+        <div class="assumption-body">Free allocation decay is modelled linearly from today's levels to zero by 2034, proxied against the EUA price slider. Actual phase-out follows EU ETS Phase 4 Directive schedules which differ by sector and installation. The model is indicative, not installation-specific.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- METHODOLOGY -->
   <div class="methodology fade-up">
     <div class="section-title">Methodology &amp; sources</div>
@@ -744,7 +800,7 @@
       </div>
       <div class="method-item">
         <div class="method-item-title">EBITDA baselines &amp; revenue</div>
-        <div class="method-item-body">Company-reported Europe segment figures, FY 2025: ArcelorMittal steel 7.0% (EBITDA $2,028m ÷ Sales $28,793m; ArcelorMittal FY 2025 Full Year Results, Feb 2026). Heidelberg Materials cement 20.5% (FY 2025 Full Year Results, Feb 2026). Steel avg. selling price: $894/t Europe (ArcelorMittal FY 2025). Cement avg. revenue: ~€85/t (industry estimate; European cement typically €80–95/t). Exposure = effective cost ÷ revenue/t, expressed as pp impact on EBITDA margin.</div>
+        <div class="method-item-body">Company-reported Europe segment figures, FY 2025: ArcelorMittal steel 7.0% (EBITDA $2,028m ÷ Sales $28,793m; ArcelorMittal FY 2025 Full Year Results, Feb 2026). Heidelberg Materials cement 20.5% (FY 2025 Full Year Results, Feb 2026). Steel avg. selling price: $894/t Europe (ArcelorMittal FY 2025, primary source). Cement avg. revenue: ~€120/t — derived estimate; Heidelberg does not disclose Europe cement volumes in tonnes. Derived from group cement revenue €10,967m ÷ estimated ~115mt global volumes (based on 2022 actuals of 118.8mt with slight 2025 decline) × ~1.25 European price premium. Flagged as estimate; all other figures are primary-sourced.</div>
       </div>
     </div>
   </div>
@@ -770,7 +826,7 @@ const STEEL_EBITDA       = 0.070;  // 7.0% — Europe segment EBITDA margin FY 2
 // Source: Heidelberg Materials FY 2025 Full Year Results, Feb 25 2026
 const CEMENT_INTENSITY   = 0.65;   // tCO2/t clinker (IEA, 2024); reported 512 kg/t cementitious
 const CEMENT_FREE_BASE   = 0.60;   // ~60% free allocation in 2026 (EU ETS Phase 4)
-const CEMENT_REVENUE_PT  = 85;     // EUR/t — European cement industry average
+const CEMENT_REVENUE_PT  = 120;    // EUR/t — derived estimate: group cement revenue €10,967m ÷ ~115mt global volumes × European premium; flagged as estimate
 const CEMENT_EBITDA      = 0.205;  // 20.5% — Europe segment EBITDA margin FY 2025
 
 const BASE_PRICE = 75;
