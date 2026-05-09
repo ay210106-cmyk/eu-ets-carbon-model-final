@@ -566,6 +566,39 @@
     .assumptions-grid { grid-template-columns: 1fr; }
   }
 
+  .breakeven-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--card-subtle);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .breakeven-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .breakeven-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--warn);
+  }
+
+  .breakeven-sub {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 300;
+  }
+
   /* ── METHODOLOGY ── */
   .methodology {
     background: var(--card);
@@ -694,6 +727,11 @@
           <div class="metric-delta neg" id="steelImpact">−0.0pp compression</div>
         </div>
       </div>
+      <div class="breakeven-bar">
+        <span class="breakeven-label">Margin halved at</span>
+        <span class="breakeven-val" id="steelBreakeven">—</span>
+        <span class="breakeven-sub">EUA price (approx. 2028–29)</span>
+      </div>
       <div class="chart-wrap">
         <canvas id="steelChart"></canvas>
       </div>
@@ -723,6 +761,11 @@
           <div class="metric-value" id="cementMargin">20.5%</div>
           <div class="metric-delta neg" id="cementImpact">−0.0pp compression</div>
         </div>
+      </div>
+      <div class="breakeven-bar">
+        <span class="breakeven-label">Margin halved at</span>
+        <span class="breakeven-val" id="cementBreakeven">—</span>
+        <span class="breakeven-sub">EUA price (approx. 2028–29)</span>
       </div>
       <div class="chart-wrap">
         <canvas id="cementChart"></canvas>
@@ -1100,6 +1143,23 @@ Analytical tone. No hedging language. Max 240 words.`;
   btn.disabled = false;
   btn.textContent = 'Regenerate insight';
 }
+
+// ── BREAK-EVEN SOLVER ──────────────────────────────────
+// Find EUA price at which carbon cost = 50% of baseline EBITDA margin
+function findHalfMarginPrice(intensity, revPT, ebitdaBase) {
+  const target = ebitdaBase / 2;
+  for (let p = 0; p <= 200; p += 0.5) {
+    const r = calc(p, intensity, revPT, ebitdaBase);
+    if (r.impact >= target) return Math.round(p);
+  }
+  return null;
+}
+
+const steelHalf  = findHalfMarginPrice(STEEL_INTENSITY,  STEEL_REVENUE_PT,  STEEL_EBITDA);
+const cementHalf = findHalfMarginPrice(CEMENT_INTENSITY, CEMENT_REVENUE_PT, CEMENT_EBITDA);
+
+document.getElementById('steelBreakeven').textContent  = steelHalf  ? '€' + steelHalf + '/t' : 'N/A';
+document.getElementById('cementBreakeven').textContent = cementHalf ? '€' + cementHalf + '/t' : 'N/A';
 
 // ── INIT ───────────────────────────────────────────────
 updateAll(75);
