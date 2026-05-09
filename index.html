@@ -933,30 +933,39 @@ function updateAll(val) {
   const c = calc(p, CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA);
 
   // Steel
+  const steelMarginPct = Math.max(0, s.margin * 100);
+  const steelImpactPp  = Math.min(s.impact * 100, STEEL_EBITDA * 100);
+  const steelEroded    = s.impact >= STEEL_EBITDA;
   document.getElementById('steelCost').textContent   = '€' + s.cost.toFixed(1);
   document.getElementById('steelDelta').textContent  = (s.cost >= baseS.cost ? '+' : '') + '€' + (s.cost - baseS.cost).toFixed(1) + ' vs. today';
-  document.getElementById('steelMargin').textContent = (s.margin * 100).toFixed(1) + '%';
-  const steelCompPp = (baseS.impact - s.impact + s.impact) * 100; // absolute carbon cost as pp of revenue
-  document.getElementById('steelImpact').textContent = '€' + s.cost.toFixed(1) + '/t = −' + (s.impact * 100).toFixed(1) + 'pp on margin';
+  document.getElementById('steelMargin').textContent = steelEroded ? '0.0%' : steelMarginPct.toFixed(1) + '%';
+  document.getElementById('steelImpact').textContent = steelEroded
+    ? 'Margin fully eroded — business model unviable without decarbonisation'
+    : '€' + s.cost.toFixed(1) + '/t = −' + steelImpactPp.toFixed(1) + 'pp on margin';
 
   // Cement
+  const cementMarginPct = Math.max(0, c.margin * 100);
+  const cementImpactPp  = Math.min(c.impact * 100, CEMENT_EBITDA * 100);
+  const cementEroded    = c.impact >= CEMENT_EBITDA;
   document.getElementById('cementCost').textContent   = '€' + c.cost.toFixed(1);
   document.getElementById('cementDelta').textContent  = (c.cost >= baseC.cost ? '+' : '') + '€' + (c.cost - baseC.cost).toFixed(1) + ' vs. today';
-  document.getElementById('cementMargin').textContent = (c.margin * 100).toFixed(1) + '%';
-  document.getElementById('cementImpact').textContent = '€' + c.cost.toFixed(1) + '/t = −' + (c.impact * 100).toFixed(1) + 'pp on margin';
+  document.getElementById('cementMargin').textContent = cementEroded ? '0.0%' : cementMarginPct.toFixed(1) + '%';
+  document.getElementById('cementImpact').textContent = cementEroded
+    ? 'Margin fully eroded — business model unviable without decarbonisation'
+    : '€' + c.cost.toFixed(1) + '/t = −' + cementImpactPp.toFixed(1) + 'pp on margin';
 
-  // Exposure bars — absolute carbon cost as % of baseline EBITDA margin
-  const sRel = s.impact / STEEL_EBITDA  * 100;
-  const cRel = c.impact / CEMENT_EBITDA * 100;
+  // Exposure bars — carbon cost as % of baseline EBITDA margin, capped at 100%
+  const sRel = Math.min(s.impact / STEEL_EBITDA  * 100, 100);
+  const cRel = Math.min(c.impact / CEMENT_EBITDA * 100, 100);
   const maxRel = Math.max(
-    calc(200, STEEL_INTENSITY,  STEEL_FREE_BASE,  STEEL_REVENUE_PT,  STEEL_EBITDA).impact  / STEEL_EBITDA  * 100,
-    calc(200, CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA).impact / CEMENT_EBITDA * 100
+    Math.min(calc(200, STEEL_INTENSITY,  STEEL_FREE_BASE,  STEEL_REVENUE_PT,  STEEL_EBITDA).impact  / STEEL_EBITDA  * 100, 100),
+    Math.min(calc(200, CEMENT_INTENSITY, CEMENT_FREE_BASE, CEMENT_REVENUE_PT, CEMENT_EBITDA).impact / CEMENT_EBITDA * 100, 100)
   );
 
   document.getElementById('steelBar').style.width   = Math.min(sRel / maxRel * 100, 100) + '%';
   document.getElementById('cementBar').style.width  = Math.min(cRel / maxRel * 100, 100) + '%';
-  document.getElementById('steelBarVal').textContent  = sRel.toFixed(1) + '% of margin';
-  document.getElementById('cementBarVal').textContent = cRel.toFixed(1) + '% of margin';
+  document.getElementById('steelBarVal').textContent  = steelEroded  ? '100% — eroded' : sRel.toFixed(1) + '% of margin';
+  document.getElementById('cementBarVal').textContent = cementEroded ? '100% — eroded' : cRel.toFixed(1) + '% of margin';
 
   // Chart markers
   updateMarker(steelChart,  p);
