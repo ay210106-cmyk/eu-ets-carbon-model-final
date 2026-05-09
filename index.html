@@ -775,9 +775,12 @@ const CEMENT_EBITDA      = 0.205;  // 20.5% — Europe segment EBITDA margin FY 
 
 const BASE_PRICE = 75;
 
-// Free allocation phases out linearly from 2026 → 0% by 2034
-// Proxy: €75 = 2026 baseline, €200 ≈ 2035 (0% allocation)
+// Free allocation in 2026 at €75 baseline, phasing to 0% by 2034
+// We model this as: at €75 (today/2026), use the base allocation.
+// As price rises toward €200 (proxy for 2035), allocation decays to zero.
+// At €0 (no carbon price), also use base allocation (no ETS → no cost anyway).
 function freeAlloc(baseAlloc, price) {
+  if (price <= 0) return baseAlloc;
   if (price <= BASE_PRICE) return baseAlloc;
   const decay = (price - BASE_PRICE) / (200 - BASE_PRICE);
   return Math.max(0, baseAlloc * (1 - decay));
@@ -786,7 +789,7 @@ function freeAlloc(baseAlloc, price) {
 function calc(price, intensity, freeBase, revPT, ebitdaBase) {
   const fa   = freeAlloc(freeBase, price);
   const cost = price * intensity * (1 - fa);
-  const impact = cost / revPT; // as fraction of margin
+  const impact = cost / revPT;
   return {
     cost,
     impact,
@@ -933,15 +936,16 @@ function updateAll(val) {
   document.getElementById('steelCost').textContent   = '€' + s.cost.toFixed(1);
   document.getElementById('steelDelta').textContent  = (s.cost >= baseS.cost ? '+' : '') + '€' + (s.cost - baseS.cost).toFixed(1) + ' vs. today';
   document.getElementById('steelMargin').textContent = (s.margin * 100).toFixed(1) + '%';
-  document.getElementById('steelImpact').textContent = '−' + (s.impact * 100).toFixed(1) + 'pp compression';
+  const steelCompPp = (baseS.impact - s.impact + s.impact) * 100; // absolute carbon cost as pp of revenue
+  document.getElementById('steelImpact').textContent = '€' + s.cost.toFixed(1) + '/t = −' + (s.impact * 100).toFixed(1) + 'pp on margin';
 
   // Cement
   document.getElementById('cementCost').textContent   = '€' + c.cost.toFixed(1);
   document.getElementById('cementDelta').textContent  = (c.cost >= baseC.cost ? '+' : '') + '€' + (c.cost - baseC.cost).toFixed(1) + ' vs. today';
   document.getElementById('cementMargin').textContent = (c.margin * 100).toFixed(1) + '%';
-  document.getElementById('cementImpact').textContent = '−' + (c.impact * 100).toFixed(1) + 'pp compression';
+  document.getElementById('cementImpact').textContent = '€' + c.cost.toFixed(1) + '/t = −' + (c.impact * 100).toFixed(1) + 'pp on margin';
 
-  // Exposure bars
+  // Exposure bars — absolute carbon cost as % of baseline EBITDA margin
   const sRel = s.impact / STEEL_EBITDA  * 100;
   const cRel = c.impact / CEMENT_EBITDA * 100;
   const maxRel = Math.max(
