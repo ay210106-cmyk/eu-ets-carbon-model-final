@@ -698,7 +698,7 @@
         <canvas id="steelChart"></canvas>
       </div>
       <div class="source-note">
-        1.8 tCO₂/t steel (World Steel Assoc., 2025). Free allocation: 90% in 2025, phasing to 0% by 2034. Baseline: Europe segment EBITDA 7.0%, avg. selling price $894/t (ArcelorMittal FY 2025 Full Year Results, Feb 2026).
+        1.8 tCO₂/t steel (World Steel Assoc., 2025). Free allocation: ~97.5% in 2026, phasing to 0% by 2034 per CBAM schedule (EU 2023/956). Baseline: Europe segment EBITDA 7.0%, avg. selling price $894/t (ArcelorMittal FY 2025 Full Year Results, Feb 2026).
       </div>
     </div>
 
@@ -728,7 +728,7 @@
         <canvas id="cementChart"></canvas>
       </div>
       <div class="source-note">
-        0.65 tCO₂/t clinker (IEA, 2024); 512 kg CO₂/t cementitious reported (Heidelberg FY 2025). Free allocation ~60% in 2026, declining. Baseline: Europe segment EBITDA 20.5% (Heidelberg Materials FY 2025 Full Year Results, Feb 2026). Avg. revenue ~€120/t — derived estimate; Europe cement revenue €4,874m ÷ estimated ~40mt volumes (see methodology).
+        0.65 tCO₂/t clinker (IEA, 2024); 512 kg CO₂/t cementitious reported (Heidelberg FY 2025). Free allocation: ~97.5% in 2026, phasing to 0% by 2034 per CBAM schedule (EU 2023/956). Baseline: Europe segment EBITDA 20.5%, avg. revenue ~€120/t derived estimate (Heidelberg Materials FY 2025 Full Year Results, Feb 2026).
       </div>
     </div>
 
@@ -1021,7 +1021,7 @@ function updateAll(val) {
   document.getElementById('steelDelta').textContent  = (s.cost >= baseS.cost ? '+' : '') + '€' + (s.cost - baseS.cost).toFixed(1) + ' vs. today';
   document.getElementById('steelMargin').textContent = steelEroded ? '0.0%' : steelMarginPct.toFixed(1) + '%';
   document.getElementById('steelImpact').textContent = steelEroded
-    ? 'Margin fully eroded — business model unviable without decarbonisation'
+    ? '0.0% — full cost pass-through or decarbonisation required at this price level'
     : '€' + s.cost.toFixed(1) + '/t = −' + steelImpactPp.toFixed(1) + 'pp on margin';
 
   // Cement
@@ -1032,7 +1032,7 @@ function updateAll(val) {
   document.getElementById('cementDelta').textContent  = (c.cost >= baseC.cost ? '+' : '') + '€' + (c.cost - baseC.cost).toFixed(1) + ' vs. today';
   document.getElementById('cementMargin').textContent = cementEroded ? '0.0%' : cementMarginPct.toFixed(1) + '%';
   document.getElementById('cementImpact').textContent = cementEroded
-    ? 'Margin fully eroded — business model unviable without decarbonisation'
+    ? '0.0% — full cost pass-through or decarbonisation required at this price level'
     : '€' + c.cost.toFixed(1) + '/t = −' + cementImpactPp.toFixed(1) + 'pp on margin';
 
   // Exposure bars — carbon cost as % of baseline EBITDA margin, capped at 100%
@@ -1045,8 +1045,8 @@ function updateAll(val) {
 
   document.getElementById('steelBar').style.width   = Math.min(sRel / maxRel * 100, 100) + '%';
   document.getElementById('cementBar').style.width  = Math.min(cRel / maxRel * 100, 100) + '%';
-  document.getElementById('steelBarVal').textContent  = steelEroded  ? '100% — eroded' : sRel.toFixed(1) + '% of margin';
-  document.getElementById('cementBarVal').textContent = cementEroded ? '100% — eroded' : cRel.toFixed(1) + '% of margin';
+  document.getElementById('steelBarVal').textContent  = steelEroded  ? '100% — pass-through required' : sRel.toFixed(1) + '% of margin';
+  document.getElementById('cementBarVal').textContent = cementEroded ? '100% — pass-through required' : cRel.toFixed(1) + '% of margin';
 
   // Chart markers
   updateMarker(steelChart,  p);
