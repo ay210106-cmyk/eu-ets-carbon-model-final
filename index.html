@@ -992,11 +992,11 @@ const baseC = calc(BASE_PRICE, CEMENT_INTENSITY, CEMENT_REVENUE_PT, CEMENT_EBITD
 function phaseName(p) {
   if (p <= 0)   return 'No carbon price';
   if (p < 75)   return 'Below current market price';
-  if (p < 85)   return 'Q1 2026 — 2.5% free alloc. removed';
-  if (p < 108)  return '2027–28 — 5–10% free alloc. removed';
-  if (p < 142)  return '2029–30 — 22.5–48.5% free alloc. removed';
-  if (p < 170)  return '2031–32 — 61–73.5% free alloc. removed';
-  return '2033–34 — 86–100% free alloc. removed';
+  if (p < 85)   return 'Q1 2026 actual price';
+  if (p < 108)  return '2027–2028 forecast range';
+  if (p < 142)  return '2029–2030 policy scenario';
+  if (p < 170)  return '2031–2032 projection';
+  return '2033–2034 long-run scenario';
 }
 
 function updateAll(val) {
@@ -1021,7 +1021,7 @@ function updateAll(val) {
   document.getElementById('steelDelta').textContent  = (s.cost >= baseS.cost ? '+' : '') + '€' + (s.cost - baseS.cost).toFixed(1) + ' vs. today';
   document.getElementById('steelMargin').textContent = steelEroded ? '0.0%' : steelMarginPct.toFixed(1) + '%';
   document.getElementById('steelImpact').textContent = steelEroded
-    ? '0.0% — full cost pass-through or decarbonisation required at this price level'
+    ? 'Pass-through or decarbonisation required'
     : '€' + s.cost.toFixed(1) + '/t = −' + steelImpactPp.toFixed(1) + 'pp on margin';
 
   // Cement
@@ -1032,7 +1032,7 @@ function updateAll(val) {
   document.getElementById('cementDelta').textContent  = (c.cost >= baseC.cost ? '+' : '') + '€' + (c.cost - baseC.cost).toFixed(1) + ' vs. today';
   document.getElementById('cementMargin').textContent = cementEroded ? '0.0%' : cementMarginPct.toFixed(1) + '%';
   document.getElementById('cementImpact').textContent = cementEroded
-    ? '0.0% — full cost pass-through or decarbonisation required at this price level'
+    ? 'Pass-through or decarbonisation required'
     : '€' + c.cost.toFixed(1) + '/t = −' + cementImpactPp.toFixed(1) + 'pp on margin';
 
   // Exposure bars — carbon cost as % of baseline EBITDA margin, capped at 100%
