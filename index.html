@@ -700,7 +700,7 @@
         <div class="slider-unit">/t CO₂e</div>
       </div>
     </div>
-    <input type="range" min="0" max="200" value="75" step="1" id="carbonSlider" oninput="updateAll(this.value)">
+    <input type="range" min="0" max="200" value="75" step="1" id="carbonSlider" style="--pct:37.5%" oninput="updateAll(this.value)">
   </div>
 
   <div class="cards-grid">
@@ -853,7 +853,7 @@
 <footer>
   Built for illustrative and educational purposes. Data reflects publicly available sources as of May 2026.<br>
   Sensitivities are indicative; actual impact depends on production routes, geography, hedging, and contract structures.<br>
-  <a href="https://www.linkedin.com/in/amin-yusifli-82800a32a" target="_blank">Amin Yusifli</a> · LSE Geography · Carbon &amp; Industrial Risk Research
+  <a href="https://www.linkedin.com/in/aminyusifli/" target="_blank">Amin Yusifli</a> · LSE Geography (BSc, 2027) · Research interests: carbon markets, energy transition and industrial risk
 </footer>
 
 <script>
@@ -1063,9 +1063,12 @@ function updateAll(val) {
   document.getElementById('steelCost').textContent   = '€' + s.cost.toFixed(1);
   document.getElementById('steelDelta').textContent  = (s.cost >= baseS.cost ? '+' : '') + '€' + (s.cost - baseS.cost).toFixed(1) + ' vs. today';
   document.getElementById('steelMargin').textContent = steelEroded ? '0.0%' : steelMarginPct.toFixed(1) + '%';
-  document.getElementById('steelImpact').textContent = steelEroded
+  const steelImpactText = steelEroded
     ? 'Pass-through or decarbonisation required'
-    : '€' + s.cost.toFixed(1) + '/t = −' + steelImpactPp.toFixed(1) + 'pp on margin';
+    : steelImpactPp < 0.05
+      ? 'At FY 2025 baseline — no additional compression'
+      : '€' + s.cost.toFixed(1) + '/t = −' + steelImpactPp.toFixed(1) + 'pp on margin';
+  document.getElementById('steelImpact').textContent = steelImpactText;
 
   // Cement
   const cementMarginPct = Math.max(0, c.margin * 100);
@@ -1074,9 +1077,12 @@ function updateAll(val) {
   document.getElementById('cementCost').textContent   = '€' + c.cost.toFixed(1);
   document.getElementById('cementDelta').textContent  = (c.cost >= baseC.cost ? '+' : '') + '€' + (c.cost - baseC.cost).toFixed(1) + ' vs. today';
   document.getElementById('cementMargin').textContent = cementEroded ? '0.0%' : cementMarginPct.toFixed(1) + '%';
-  document.getElementById('cementImpact').textContent = cementEroded
+  const cementImpactText = cementEroded
     ? 'Pass-through or decarbonisation required'
-    : '€' + c.cost.toFixed(1) + '/t = −' + cementImpactPp.toFixed(1) + 'pp on margin';
+    : cementImpactPp < 0.05
+      ? 'At FY 2025 baseline — no additional compression'
+      : '€' + c.cost.toFixed(1) + '/t = −' + cementImpactPp.toFixed(1) + 'pp on margin';
+  document.getElementById('cementImpact').textContent = cementImpactText;
 
   // Exposure bars — carbon cost as % of baseline EBITDA margin, capped at 100%
   const sRel = Math.min(s.impact / STEEL_EBITDA  * 100, 100);
